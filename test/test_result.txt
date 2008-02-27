@@ -1,0 +1,69 @@
+....FFFFFFFF
+
+1)
+'#<Object:0xb7820c3c>  should show class name in output' FAILED
+expected: /^'#<Object:0x[^>]+>  should show class name in output' FAILED$/,
+     got: nil (using =~)
+./test.rb:53:in `quicktest'
+/home/greg/quicktest/lib/quicktest.rb:87:in `call'
+/home/greg/quicktest/lib/quicktest.rb:87:in `__quicktest_run_tests__'
+
+2)
+'#<Object:0xb7820494> new_method_added should show name of added method' FAILED
+expected: /^'#<Object:0x[^>]+> new_method_added should show name of added method' FAILED$/,
+     got: nil (using =~)
+./test.rb:63:in `quicktest'
+/home/greg/quicktest/lib/quicktest.rb:87:in `call'
+/home/greg/quicktest/lib/quicktest.rb:87:in `__quicktest_run_tests__'
+
+3)
+'TestModule  should show class name in output' FAILED
+expected: /^'TestModule  should show class name in output' FAILED$/,
+     got: nil (using =~)
+./test.rb:73:in `quicktest'
+/home/greg/quicktest/lib/quicktest.rb:87:in `call'
+/home/greg/quicktest/lib/quicktest.rb:87:in `__quicktest_run_tests__'
+
+4)
+'TestModule new_singleton_method_added should show class name in output' FAILED
+expected: /^'TestModule new_singleton_method_added should show class name in output' FAILED$/,
+     got: nil (using =~)
+./test.rb:84:in `quicktest'
+/home/greg/quicktest/lib/quicktest.rb:87:in `call'
+/home/greg/quicktest/lib/quicktest.rb:87:in `__quicktest_run_tests__'
+
+5)
+'TestClass  should show class name in output' FAILED
+expected: /^'TestClass  should show class name in output' FAILED$/,
+     got: nil (using =~)
+./test.rb:95:in `quicktest'
+/home/greg/quicktest/lib/quicktest.rb:87:in `call'
+/home/greg/quicktest/lib/quicktest.rb:87:in `__quicktest_run_tests__'
+
+6)
+'#<TestClass:0xb781e928>  should show class name in output' FAILED
+expected: /^'#<TestClass:0x[^>]+>  should show class name in output' FAILED$/,
+     got: nil (using =~)
+./test.rb:102:in `quicktest'
+/home/greg/quicktest/lib/quicktest.rb:87:in `call'
+/home/greg/quicktest/lib/quicktest.rb:87:in `__quicktest_run_tests__'
+
+7)
+'#<TestClass:0xb781e248> new_method_added should show name of added method' FAILED
+expected: /^'#<TestClass:0x[^>]+> new_method_added should show name of added method' FAILED$/,
+     got: nil (using =~)
+./test.rb:112:in `quicktest'
+/home/greg/quicktest/lib/quicktest.rb:87:in `call'
+/home/greg/quicktest/lib/quicktest.rb:87:in `__quicktest_run_tests__'
+
+8)
+'TestClass new_singleton_method_added should show class name in output' FAILED
+expected: /^'TestClass new_singleton_method_added should show class name in output' FAILED$/,
+     got: nil (using =~)
+./test.rb:123:in `quicktest'
+/home/greg/quicktest/lib/quicktest.rb:87:in `call'
+/home/greg/quicktest/lib/quicktest.rb:87:in `__quicktest_run_tests__'
+
+Finished in 0.030033 seconds
+
+12 examples, 8 failures
