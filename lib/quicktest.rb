@@ -1,5 +1,9 @@
 # :main: README
 
+# TODO
+# allow self.quicktest after instance method, and quicktest after a class method
+# test module instance methods by setting the quicktest object to include them into
+
 module QuickTest
 
   # create module variables

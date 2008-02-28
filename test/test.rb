@@ -5,6 +5,11 @@
 # regenerate and run
 # spec -r ../lib/quicktest test.rb >| test_result.txt || spec -r ../lib/quicktest test.rb
 
+def quicktest
+  it "should be of class Object" do
+    self.should be_kind_of(Object)
+  end
+end
 # all tests for this class should always pass
 class Tester
   def self.meth
