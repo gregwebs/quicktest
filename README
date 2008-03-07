@@ -31,20 +31,32 @@ run with bin/quickspec
 =begin rdoc
 
 Running quicktest on the source of this README file outputs the following:
-.F
+  .F
 
-1)
-'Foo hello should prepend 'hello' to its argument' FAILED
-expected: "hello world",
-     got: "helloworld" (using ==)
-./README:22:in `quicktest'
-/home/greg/quicktest/lib/quicktest.rb:65:in `instance_eval'
-/home/greg/quicktest/lib/quicktest.rb:65:in `run_tests'
+  1)
+  'Foo hello should prepend 'hello' to its argument' FAILED
+  expected: "hello world",
+       got: "helloworld" (using ==)
+  ./README:22:in `quicktest'
+  /home/greg/quicktest/lib/quicktest.rb:65:in `instance_eval'
+  /home/greg/quicktest/lib/quicktest.rb:65:in `run_tests'
 
-Finished in 0.008338 seconds
+  Finished in 0.008338 seconds
 
-2 examples, 1 failure
+  2 examples, 1 failure
 
+== Usage
+To test a method, place another method called 'quicktest' immediately after it
+the quicktest method has one OPTIONAL argument:
+- a method object for the method under test
+
+run with
+
+  spec -r quicktest file_to_test
+
+There is a convenience script so that you can just run
+
+  quickspec file_to_test
 
 == Author and License
 Copyright (c) 2008 Greg Weber, http://gregweber.info
@@ -62,11 +74,10 @@ Quicktest uses method tracing to know the method you are testing. By default the
 gem instlal quicktest
 
 == Source
-- git clone git://github.com/gregwebs/quicktest.git
-
-browse at
-
-  http://github.com/gregwebs/quicktest/tree/master
+=== browser
+http://github.com/gregwebs/quicktest/tree/master
+=== repository
+git clone git://github.com/gregwebs/quicktest.git
 
 == Homepage
 http://gregweber.info/projects/quicktest.html
@@ -74,22 +85,35 @@ http://gregweber.info/projects/quicktest.html
 == RDoc documentation
 http://quicktest.rubyforge.org/
 
-== Usage
-To test a method, place another method called 'quicktest' immediately after it
-the quicktest method has one OPTIONAL argument
-- a method object for the method under test
+== Important Notes
+- def quicktest will instantiate an object for the class you are testing, which gives a convenient referenct to self in the quicktest method.  However, it calls new() without any parameters.  If you need parameters for new(), you will have to use def self.quicktest.
+- quicktest methods not working properly? if the class (or one of its ancestors) is overriding method tracing then including QuickTest::Tracer will fix it.
 
-run with
+== Unimportant Notes
+=== production performance
+leaving test code in with your production code is not necessarily a good idea, but there is almost no runtime overhead to doing so since ruby will not evaluate code in a method until the method is invoked
 
-  spec -r quicktest file_to_test
+=== rationals
+* tests for scripts
+Definitely very useful for one file scripts, or any type of code that does not have a well established project home where the tests will be.  You can distribute the tests with script so that anyone who wants to modify it can also modify the tests instead of assuming the original author did not write any.
+You can have a flow of development where a 'quick and dirty' script becomes well tested.  Here is a shell function that tests the file before every run.
+  function test_run () { quickspec $1 && $1 }
+* documentation
+Tests are a form of documentation.  It can be argued that it is better to have all documentation include in the source
 
-There is a convenience script so that you can just run
+* efficient TDD
+When writing fresh code you now have the possibility to be directly next to the code under test without having to switch back and forth between files.  When you are done writing the new code, you can easily pull all the quicktest methods out and into a spec file.
 
-  quickspec file_to_test
 
-== Notes
-- def quicktest will instantiate an object for the class you are testing, which gives a convenient referenct to self in the quicktest method.  However, it calls new() without any parameters.  If you need parameters for new(), you will have to use def self.quicktest
-- quicktest instance methods not working properly? if the class (or one of its ancestors) is overriding method tracing than including QuickTest::Tracer will fix it.
-- leaving test code in with your production code is not necessarily a good idea, but there is almost no runtime overhead to doing so since ruby will not evaluate code in a method until the method is invoked
+=== Origins
+Quicktest came out of my dabbling in the D programming language, which allows you to place testing blocks inline with your source code
+  unittest{
+   ...
+  }
+
+Normally, these blocks are ignored, but if you compile with a different switch, they are linked in and ran at the beginning of your program.
+Originally, I made an exact copy of this, but among other things, it requires the placement of a line like
+  (def unittest;end) if not defined? unittest
+at the beginning of the file.  It would be nice if Ruby had a similar construct built in to the language.
 
 =end rdoc
