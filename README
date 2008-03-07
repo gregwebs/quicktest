@@ -1,64 +1,36 @@
 =begin rdoc
-== Author and License
-Copyright (c) 2008 Greg Weber, http://gregweber.info
-Licensed under the MIT license
 
-== ABOUT
+== Summary
 Quicktest - A utility for inlining ruby unit tests with the ruby code under test
 
-The typical test driven development workflow requires constant switching between the file containg the source code and the the file containg the tests. When creating code, it is much faster to be able to place tests immediately after the code you are writing.  After the code has been written, it may be a good idea to move it to another file.
+== Example
+run with bin/quickspec
 
-Quicktest is designed to support quick tests in a framework agnostic way.  Currently, only an rspec testrunner is available, but it is trivial to write one for another testing framework.
-
-== FEATURES
-Quicktest uses method tracing to know the method you are testing. By default the output of a failed test will show the object and method name.
-
-== USAGE
-To test a method, place another method called 'quicktest' immediately after it
-the quicktest method has one OPTIONAL argument
-- a method object for the method under test
-
-run with
-
-  spec -r quicktest file_to_test
-
-There is a convenience script so that you can just run
-
-  quickspec file_to_test
-
-== NOTES
-- leaving test code in with your production code is not necessarily a good idea, but there is almost no runtime overhead to doing so since ruby will not evaluate code in a method until the method is invoked
-- quicktest instance methods not working properly? if the class (or one of its ancestors) is overriding method tracing than including QuickTest::Tracer will fix it.
-
-
-example: run with bin/quickspec
 =end rdoc
 
-class Foo
-  attr_reader :bar
+  class Foo
+    def initialize
+      @bar = true
+    end
+    def quicktest
+      it "bar should be initialized to true" do
+        @bar.should == true
+      end
+    end
 
-  def initialize
-    @bar = true
-  end
-  def quicktest
-    it "bar should be initialized to true" do
-      bar.should == true
+    def self.hello arg
+      "hello" + arg
+    end
+    def self.quicktest meth
+      it "should prepend 'hello' to its argument" do
+        meth["world"].should == 'hello world' # error - no space 'helloworld'
+      end
     end
   end
 
-  def self.hello arg
-    "hello" + arg
-  end
-  def self.quicktest meth
-    it "should prepend 'hello' to its argument" do
-      meth["world"].should == 'hello world' # error - no space 'helloworld'
-    end
-  end
-end
+=begin rdoc
 
-=begin
-
-Running quicktest on the sourc of this README file outputs the following:
+Running quicktest on the source of this README file outputs the following:
 .F
 
 1)
@@ -72,4 +44,52 @@ expected: "hello world",
 Finished in 0.008338 seconds
 
 2 examples, 1 failure
-=end
+
+
+== Author and License
+Copyright (c) 2008 Greg Weber, http://gregweber.info
+Licensed under the MIT license
+
+== About
+
+The typical test driven development workflow requires constant switching between the file containg the source code and the the file containg the tests. When creating code, it is much faster to be able to place tests immediately after the code you are writing.  After the code has been written, it may be a good idea to move it to another file.
+
+Quicktest is designed to support quick tests in a framework agnostic way.  Currently, only an rspec testrunner is available, but it is trivial to write one for another testing framework.
+
+Quicktest uses method tracing to know the method you are testing. By default the output of a failed test will show the object and method name.
+
+== Install
+gem instlal quicktest
+
+== Source
+- git clone git://github.com/gregwebs/quicktest.git
+
+browse at
+
+  http://github.com/gregwebs/quicktest/tree/master
+
+== Homepage
+http://gregweber.info/projects/quicktest.html
+
+== RDoc documentation
+http://quicktest.rubyforge.org/
+
+== Usage
+To test a method, place another method called 'quicktest' immediately after it
+the quicktest method has one OPTIONAL argument
+- a method object for the method under test
+
+run with
+
+  spec -r quicktest file_to_test
+
+There is a convenience script so that you can just run
+
+  quickspec file_to_test
+
+== Notes
+- def quicktest will instantiate an object for the class you are testing, which gives a convenient referenct to self in the quicktest method.  However, it calls new() without any parameters.  If you need parameters for new(), you will have to use def self.quicktest
+- quicktest instance methods not working properly? if the class (or one of its ancestors) is overriding method tracing than including QuickTest::Tracer will fix it.
+- leaving test code in with your production code is not necessarily a good idea, but there is almost no runtime overhead to doing so since ruby will not evaluate code in a method until the method is invoked
+
+=end rdoc

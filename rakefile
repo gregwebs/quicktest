@@ -23,6 +23,62 @@ namespace :test do
   end
 end
 
+class IO
+  def self.write( file, str )
+    self.open( file, 'w' ) { |fh| fh.print str }
+  end
+  def self.read_write( file, write_file=file )
+    self.write(write_file, (yield( self.read( file ))))
+  end
+end
+class String
+  def split_join( splitter=$/ )
+    yield( split( splitter ) ).join( splitter )
+  end
+end
+
+def decode_readme &block
+  fail unless block_given?
+  begin
+    old_readme = nil
+    File.read_write( 'README' ) do |text|
+      old_readme = text
+      text.split_join do |arr|
+        arr.reject {|l| l =~ /^=(?:begin|end)/}
+      end
+    end
+    block.call
+  ensure
+    File.write( 'README', old_readme ) if old_readme
+  end
+end
+
+desc "generate documentation"
+task :rdoc do
+  decode_readme do
+    fail unless system 'rdoc --force-update --quiet README lib/*'
+  end
+end
+
+namespace :readme do
+  desc "dump modified README"
+  task :decode do
+    decode_readme do
+      puts File.read('README')
+    end
+  end
+
+  desc "create html for website using coderay"
+  task :html => :rdoc do
+    require 'hpricot'
+    doc = open( 'doc/files/README.html' ) { |f| Hpricot(f) }
+    # find example code
+    ex = doc.at('#description').search('pre').select {|elem| elem.inner_html =~ /def self\.quicktest/}.first
+    ex.swap("<coderay lang='ruby'>#{ex.inner_html}</coderay>")
+    # undo what rdoc has done in the example code
+    puts doc.at('#description').to_html.gsub('&quot;', '"')
+  end
+end
 
 require 'rubygems'
 require 'rake/gempackagetask'
