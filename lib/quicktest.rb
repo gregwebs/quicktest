@@ -13,6 +13,11 @@ module QuickTest
 
     # set which code will be running the tests
     attr_accessor :runner, :runner_module
+
+    # when testing module instance methods
+    # this defines the class to include a module into
+    # user sets this by defining self.quicktest_include_into in a module
+    attr_accessor :include_module_into
   end
 
   # to reuse this implementation
@@ -123,6 +128,10 @@ module QuickTest
 
           if traced == :quicktest
             QuickTest.runner.new self
+
+          elsif traced == :quicktest_include_into
+            QuickTest.include_module_into = self.quicktest_include_into
+
           else
             QuickTest.runner.add_singleton_method traced
             __quicktest_singleton_method_added__ traced
@@ -138,10 +147,15 @@ module QuickTest
           return if traced == qt.runner.methods.last
 
           if traced == :quicktest
-            if self.class == Module
-              fail "to test module instance methods, include them in a class"
-            end
-            qt.runner.new self.new
+            qt.runner.new(
+              if self.class != Module
+                self.new
+              else
+                o = (QuickTest.include_module_into || (fail "to test module instance methods, include them in a class or define a method for the module 'self.quicktest_include_into'")).new
+                o.extend(self)
+                o
+              end
+            )
 
           else
             unless qt.ignore_first_method_added or

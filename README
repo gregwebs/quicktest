@@ -86,12 +86,20 @@ http://gregweber.info/projects/quicktest.html
 http://quicktest.rubyforge.org/
 
 == Important Notes
-- def quicktest will instantiate an object for the class you are testing, which gives a convenient referenct to self in the quicktest method.  However, it calls new() without any parameters.  If you need parameters for new(), you will have to use def self.quicktest.
+- to test a module instance method, you must define an object that the module will be included into by defining the following in the module:
+
+  def self.quicktest_include_into; Object end
+
+- def quicktest will instantiate an object for the class you are testing, which gives a convenient referenct to self in the quicktest method.  However, it calls new() without any parameters.  If you need parameters for new(), you will have to use def self.quicktest and call new() yourself
 - quicktest methods not working properly? if the class (or one of its ancestors) is overriding method tracing then including QuickTest::Tracer will fix it.
 
 == Unimportant Notes
 === production performance
-leaving test code in with your production code is not necessarily a good idea, but there is almost no runtime overhead to doing so since ruby will not evaluate code in a method until the method is invoked
+leaving test code in with your production code is not necessarily a good idea, but there is almost no runtime overhead to doing so since ruby will not evaluate code in a method until the method is invoked.  You can also put
+
+  remove_method :quicktest
+
+at the bottom of a class to completely remove the quicktest method
 
 === rationals
 * tests for scripts
@@ -101,7 +109,7 @@ You can have a flow of development where a 'quick and dirty' script becomes well
 * documentation
 Tests are a form of documentation.  It can be argued that it is better to have all documentation include in the source
 
-* efficient TDD
+* efficient TDD and prototyping
 When writing fresh code you now have the possibility to be directly next to the code under test without having to switch back and forth between files.  When you are done writing the new code, you can easily pull all the quicktest methods out and into a spec file.
 
 

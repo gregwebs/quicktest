@@ -80,13 +80,22 @@ namespace :readme do
   end
 end
 
+desc "release a new gem to rubyforge"
+task :release do
+  Dir.chdir('pkg') do
+    release = Dir['*.gem'].sort_by {|file| File.mtime(file)}.last
+    release =~ /^[^-]+-([.0-9]+).gem$/
+    `rubyforge login && rubyforge add_release quicktest quicktest #$1 release`
+  end
+end
+
 require 'rubygems'
 require 'rake/gempackagetask'
 
 spec = Gem::Specification.new do |s|
   s.name = "quicktest"
   s.rubyforge_project = "quicktest"
-  s.version = "0.3.2"
+  s.version = "0.3.4"
   s.author = "Greg Weber"
   s.email = "greg@gregweber.info"
   s.homepage = "http://quicktest.rubyfore.org/"
