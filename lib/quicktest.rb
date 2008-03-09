@@ -17,7 +17,10 @@ module QuickTest
     # when testing module instance methods
     # this defines the class to include a module into
     # user sets this by defining self.quicktest_include_into in a module
+    # otherwise, a generic class is used
     attr_accessor :include_module_into
+
+    attr_accessor :last_self
   end
 
   # to reuse this implementation
@@ -126,6 +129,11 @@ module QuickTest
           # avoid infinite recursion if module is included into a class by a user
           return if traced == QuickTest.runner.methods.last
 
+          if QuickTest.last_self != self
+            QuickTest.last_self = self
+            QuickTest.include_module_into = nil
+          end
+
           if traced == :quicktest
             QuickTest.runner.new self
 
@@ -151,7 +159,8 @@ module QuickTest
               if self.class != Module
                 self.new
               else
-                o = (QuickTest.include_module_into || (fail "to test module instance methods, include them in a class or define a method for the module 'self.quicktest_include_into'")).new
+                imi = QuickTest.include_module_into
+                o = (imi ? Class.new(imi) : Class.new).new
                 o.extend(self)
                 o
               end
