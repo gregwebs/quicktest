@@ -5,22 +5,26 @@ desc "test"
 task :test do
   run = 'spec -r ../lib/quicktest test.rb'
   test_dir {puts `#{run} >| test_result.txt || #{run}`}
+  exit $?.exitstatus if $?.exitstatus != 0
 end
 
 namespace :test do
   run = '../bin/quickspec test.rb'
   task :generate do
     test_dir {`#{run} >| test_result.txt`}
+    exit $?.exitstatus if $?.exitstatus != 0
   end
 
   desc "test quickspec executable"
   task :quickspec => :generate do
     test_dir {puts `#{run}`}
+    exit $?.exitstatus if $?.exitstatus != 0
   end
 
   desc "test readme file"
   task :README do
     puts `./bin/quickspec README`
+    exit $?.exitstatus if $?.exitstatus != 0
   end
 end
 
@@ -74,10 +78,12 @@ namespace :readme do
     require 'hpricot'
     doc = open( 'doc/files/README.html' ) { |f| Hpricot(f) }
     # find example code
-    ex = doc.at('#description').search('pre').select {|elem| elem.inner_html =~ /def self\.quicktest/}.first
-    ex.swap("<coderay lang='ruby'>#{ex.inner_html}</coderay>")
-    # undo what rdoc has done in the example code
-    puts doc.at('#description').to_html.gsub('&quot;', '"')
+    doc.at('#description').search('pre').
+      select {|elem| elem.inner_html =~ /class |module /}.each do |ex|
+      # add coderay and undo what rdoc has done in the example code
+      ex.swap("<coderay lang='ruby'>#{ex.inner_html.gsub('&quot;', '"').gsub('&gt;','>')}</coderay>")
+    end
+    puts doc.at('#description').to_html
   end
 end
 
