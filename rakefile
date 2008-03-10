@@ -1,32 +1,54 @@
 project = 'quicktest'
-def test_dir; Dir.chdir('test') {|dir| yield dir } end
+def test_dir; Dir.chdir('spec') {|dir| yield dir } end
+
+def run command
+  res = `#{command}`
+  exit $?.exitstatus if $?.exitstatus != 0
+  res
+end
 
 desc "test"
 task :test do
-  run = 'spec -r ../lib/quicktest test.rb'
-  test_dir {puts `#{run} >| test_result.txt || #{run}`}
-  exit $?.exitstatus if $?.exitstatus != 0
+  t = 'spec -r ../lib/quicktest test.rb'
+  test_dir {(puts (run "#{t} >| test_result.txt || #{t}"))}
 end
 
 namespace :test do
   run = '../bin/quickspec test.rb'
   task :generate do
-    test_dir {`#{run} >| test_result.txt`}
-    exit $?.exitstatus if $?.exitstatus != 0
+    test_dir {run "#{run} >| test_result.txt"}
   end
 
   desc "test quickspec executable"
   task :quickspec => :generate do
-    test_dir {puts `#{run}`}
-    exit $?.exitstatus if $?.exitstatus != 0
+    test_dir {(puts (run "#{run}"))}
   end
 
   desc "test readme file"
   task :README do
-    puts `./bin/quickspec README`
-    exit $?.exitstatus if $?.exitstatus != 0
+    (puts (run "./bin/quickspec README"))
   end
 end
+
+=begin
+require 'rubygems'
+require 'spec/rake/spectask'
+desc "Run all examples with RCov"
+Spec::Rake::SpecTask.new('rcov') do |t|
+  t.spec_files = ['spec/*.rb']
+  t.rcov = true
+  t.rcov_opts = ['--exclude', 'spec']
+end
+
+namespace :rcov do
+  require 'spec/rake/verify_rcov'
+  # rcov is wrong- I am actually at 100%
+  RCov::VerifyTask.new(:verify => :spec) do |t|
+    t.threshold = 86.7 # Make sure you have rcov 0.7 or higher!
+    t.index_html = 'coverage/lib-import_rb.html'
+  end
+end
+=end
 
 class IO
   def self.write( file, str )
@@ -74,7 +96,11 @@ namespace :readme do
   end
 
   desc "create html for website using coderay, use --silent option"
-  task :html => :rdoc do
+  task :html do
+    rm_rf 'doc'
+    decode_readme do
+      fail unless system 'rdoc --force-update --quiet README'
+    end
     require 'hpricot'
     doc = open( 'doc/files/README.html' ) { |f| Hpricot(f) }
     # find example code
@@ -92,7 +118,7 @@ task :release => [:rdoc,:package] do
   Dir.chdir('pkg') do
     release = Dir['*.gem'].sort_by {|file| File.mtime(file)}.last
     release =~ /^[^-]+-([.0-9]+).gem$/
-    `rubyforge login && rubyforge add_release #{project} #{project} #$1 #{release}`
+    run "rubyforge login && rubyforge add_release #{project} #{project} #$1 #{release}"
   end
 end
 
