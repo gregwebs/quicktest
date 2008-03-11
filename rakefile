@@ -30,26 +30,6 @@ namespace :test do
   end
 end
 
-=begin
-require 'rubygems'
-require 'spec/rake/spectask'
-desc "Run all examples with RCov"
-Spec::Rake::SpecTask.new('rcov') do |t|
-  t.spec_files = ['spec/*.rb']
-  t.rcov = true
-  t.rcov_opts = ['--exclude', 'spec']
-end
-
-namespace :rcov do
-  require 'spec/rake/verify_rcov'
-  # rcov is wrong- I am actually at 100%
-  RCov::VerifyTask.new(:verify => :spec) do |t|
-    t.threshold = 86.7 # Make sure you have rcov 0.7 or higher!
-    t.index_html = 'coverage/lib-import_rb.html'
-  end
-end
-=end
-
 class IO
   def self.write( file, str )
     self.open( file, 'w' ) { |fh| fh.print str }
@@ -119,7 +99,9 @@ task :release => [:test,:record,:rdoc,:website,:package] do
     release = Dir['*.gem'].sort_by {|file| File.mtime(file)}.last
     release =~ /^[^-]+-([.0-9]+).gem$/
     (puts (run "rubyforge login && rubyforge add_release #{project} #{project} #$1 #{release}"))
-    run "cd doc && scp -r ./ gregwebs@rubyforge.org:/var/www/gforge-projects/#{project}"
+  end
+  Dir.chdir('doc') do
+    run "scp -r ./ gregwebs@rubyforge.org:/var/www/gforge-projects/#{project}"
   end
 end
 
@@ -148,14 +130,16 @@ require 'rake/gempackagetask'
 spec = Gem::Specification.new do |s|
   s.name = project
   s.rubyforge_project = project
-  s.version = "0.5.5"
+  s.version = "0.5.6"
   s.author = "Greg Weber"
   s.email = "greg@gregweber.info"
   s.homepage = "http://quicktest.rubyfore.org/"
   s.platform = Gem::Platform::RUBY
   s.summary = "utility for inlining tests with the code tested"
   s.executables = ['quickspec']
-  s.files = Dir['./**'] + Dir['*/**']
+  s.files = FileList.new('./**', '*/**') do |fl|
+             fl.exclude('pkg','pkg/*','tmp','tmp/*')
+           end
   s.require_path = "lib"
   s.has_rdoc = true
   s.extra_rdoc_files = ["README"]
@@ -163,12 +147,11 @@ spec = Gem::Specification.new do |s|
   s.post_install_message = <<-EOS
 
   spec and quickspec are ruby executable scripts, whose directory location must be in your PATH environment variable (or you must invoke the with the full file path).
-end
 
   run tests with
      quickspec [file1 file2 ...]
 
-  EOS
+EOS
 end
 
 Rake::GemPackageTask.new(spec) do |pkg|
