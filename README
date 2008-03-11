@@ -46,10 +46,16 @@ Running quicktest on the source of this README file outputs the following:
   2 examples, 1 failure
 
 == Usage
+=== Install
+
+  gem install quicktest
+
+=== test code
 To test a method, place another method called 'quicktest' immediately after it
 the quicktest method has one OPTIONAL argument:
 - a method object for the method under test
 
+=== execution
 run with
 
   spec -r quicktest file_to_test
