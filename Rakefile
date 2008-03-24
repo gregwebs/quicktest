@@ -1,10 +1,12 @@
-project = 'quicktest'
+$project = 'quicktest'
+require 'tasks/helpers'
+
 def test_dir; Dir.chdir('spec') {|dir| yield dir } end
 
-def run command
-  res = `#{command}`
-  exit $?.exitstatus if $?.exitstatus != 0
-  res
+class String
+  def split_join( splitter=$/ )
+    yield( split( splitter ) ).join( splitter )
+  end
 end
 
 desc "test"
@@ -27,20 +29,6 @@ namespace :test do
   desc "test readme file"
   task :readme do
     (puts (run "./bin/quickspec README"))
-  end
-end
-
-class IO
-  def self.write( file, str )
-    self.open( file, 'w' ) { |fh| fh.print str }
-  end
-  def self.read_write( file, write_file=file )
-    self.write(write_file, (yield( self.read( file ))))
-  end
-end
-class String
-  def split_join( splitter=$/ )
-    yield( split( splitter ) ).join( splitter )
   end
 end
 
@@ -82,45 +70,15 @@ namespace :readme do
       fail unless system 'rdoc --force-update --quiet README'
     end
     require 'hpricot'
+    require 'htmlentities'
     doc = open( 'doc/files/README.html' ) { |f| Hpricot(f) }
     # find example code
     doc.at('#description').search('pre').
       select {|elem| elem.inner_html =~ /class |module /}.each do |ex|
       # add coderay and undo what rdoc has done in the example code
-      ex.swap("<coderay lang='ruby'>#{ex.inner_html.gsub('&quot;', '"').gsub('&gt;','>')}</coderay>")
+      ex.swap("<coderay lang='ruby'>#{HTMLEntities.new.decode ex.inner_html}</coderay>")
     end
     puts doc.at('#description').to_html
-  end
-end
-
-desc "release a new gem to rubyforge"
-task :release => [:test,:record,:rdoc,:website,:package] do
-  Dir.chdir('pkg') do
-    release = Dir['*.gem'].sort_by {|file| File.mtime(file)}.last
-    release =~ /^[^-]+-([.0-9]+).gem$/
-    (puts (run "rubyforge login && rubyforge add_release #{project} #{project} #$1 #{release}"))
-  end
-  Dir.chdir('doc') do
-    run "scp -r ./ gregwebs@rubyforge.org:/var/www/gforge-projects/#{project}"
-  end
-end
-
-desc "update website"
-file :website => ['README','rakefile'] do
-  Dir.chdir '/home/greg/sites/projects/' do
-    (puts (run 'rake projects:update'))
-    (puts (run 'rake deploy:rsync'))
-  end
-end
-
-desc 'git add and push'
-task :record do
-  unless `git diff`.chomp.empty?
-    ARGV.clear
-    puts "enter commit message"
-    (puts (run "git commit -a -m #{Kernel.gets}"))
-    puts "committed! now pushing.. "
-    (puts (run 'git push origin master'))
   end
 end
 
@@ -128,8 +86,8 @@ require 'rubygems'
 require 'rake/gempackagetask'
 
 spec = Gem::Specification.new do |s|
-  s.name = project
-  s.rubyforge_project = project
+  s.name = $project
+  s.rubyforge_project = $project
   s.version = "0.5.6"
   s.author = "Greg Weber"
   s.email = "greg@gregweber.info"
