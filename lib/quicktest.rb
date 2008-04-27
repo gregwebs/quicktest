@@ -8,6 +8,9 @@ module QuickTest
 
   # create module variables
   class << self
+    # then name of the testing method, default is :quicktest
+    attr_accessor :quicktest
+
     # don't record the fact that we add Module.method_added
     attr_accessor :ignore_first_method_added
 
@@ -45,17 +48,17 @@ module QuickTest
 
     # keep a list of all traced methods
     self.methods = []
-    def self.add_method( meth )
+    def self.add_method meth
       self.methods.push meth
     end
-    def self.add_singleton_method( meth )
+    def self.add_singleton_method meth
       self.methods.push meth
     end
 
     def initialize tested
       self.class.tested_self = tested
 
-      q = tested.method(:quicktest)
+      q = tested.method(QuickTest.quicktest)
       tested.extend(QuickTest.runner_module)
       QuickTest.runner_module::QuickTestIncludeModules.each do |mod|
         tested.extend mod
@@ -64,10 +67,16 @@ module QuickTest
       case q.arity
       when 0 then q.call
       when 1 then q.call tested.method(self.class.methods[-1])
-      else raise ArgumentError, "to many arguments for quicktest method"
+      else raise ArgumentError, "to many arguments for #{QuickTest.quicktest} method"
       end
 
       tested.send :__quicktest_run_tests__
+
+      # removing the quicktest method will prevent Ruby from warning about the method being redefined
+      # I don't know how to remove a class method
+      unless tested.kind_of?(Class) or tested.kind_of?(Module)
+        tested.class.class_eval { remove_method QuickTest.quicktest }
+      end
     end
   end
 
@@ -79,21 +88,22 @@ module QuickTest
     @@after_block = nil
     @@before_block = nil
 
-    def before( &block ); @@before_block = block end
-    def after( &block );  @@after_block = block end
-    def it(specification, &block )
+    def before( *args, &block ) @@before_block = [args, block] end
+    def after(  *args, &block ) @@after_block  = [args, block] end
+    def it specification, &block
       @@quicktests[(TestRunner.methods.pop.to_s << ' ' << specification)] = block
       TestRunner.methods.clear
     end
 
   private
     def __quicktest_run_tests__ # :nodoc:
-      before_block, after_block = @@before_block, @@after_block
+      before_args, before_block = @@before_block
+      after_args, after_block = @@after_block
       tests = @@quicktests
 
       describe( TestRunner.tested_self.to_s ) do
-        before { before_block.call } if before_block
-        after  { after_block.call } if after_block
+        before(*before_args) { before_block.call } if before_block
+        after(*after_args)   { after_block.call }  if after_block
 
         tests.each_pair do |spec, test_block|
           it( spec ) { test_block.call }
@@ -110,9 +120,9 @@ module QuickTest
   module Tracer
     def self.included(into)
       if into == Class or into == Module # default include in in Module
-        self.tracer_include(into)
+        self.tracer_include into
       else
-        self.tracer_include((class<<into;self;end))
+        self.tracer_include(class<<into;self;end)
       end
     end
 
@@ -125,7 +135,7 @@ module QuickTest
         alias_method :__quicktest_method_added__, :method_added
 
         # ruby tracing hook
-        def singleton_method_added(traced)
+        def singleton_method_added traced
           # avoid infinite recursion if module is included into a class by a user
           return if traced == QuickTest.runner.methods.last
 
@@ -134,7 +144,7 @@ module QuickTest
             QuickTest.include_module_into = nil
           end
 
-          if traced == :quicktest
+          if traced == QuickTest.quicktest
             QuickTest.runner.new self
 
           elsif traced == :quicktest_include_into
@@ -149,20 +159,17 @@ module QuickTest
         QuickTest.ignore_first_method_added = true
 
         # ruby tracing hook
-        def method_added(traced)
+        def method_added traced
           qt = QuickTest
           # avoid infinite recursion if module is included into a class by a user
           return if traced == qt.runner.methods.last
 
-          if traced == :quicktest
+          if traced == QuickTest.quicktest
             qt.runner.new(
               if self.class != Module
                 self.new
               else
-                imi = QuickTest.include_module_into
-                o = (imi ? Class.new(imi) : Class.new).new
-                o.extend(self)
-                o
+                Class.new(QuickTest.include_module_into || Object).extend(self)
               end
             )
 
@@ -182,16 +189,29 @@ module QuickTest
 end
 
 
-# add cases for different test handlers here
+# command line configurable
+QuickTest.quicktest = :quicktest
 QuickTest.runner = QuickTest::TestRunner
-QuickTest.runner_module = 
-case ARGV[0]
-when '--rspec' then ARGV.shift; QuickTest::RSpecTestRunner
-else # assume rspec
-  QuickTest::RSpecTestRunner
-end
+QuickTest.runner_module = QuickTest::RSpecTestRunner
 
+files = []
+while(arg = ARGV.shift)
+  case arg
+  when '--rspec'
+    QuickTest.runner_module = ARGV.shift || (fail "--rspec requires an argument")
+  when '--quicktest'
+    QuickTest.quicktest = ARGV.shift || (fail "--quicktest requires an argument")
+  else
+    fail "unknown argument: #{arg}" unless File.exist? arg
+    files.push(arg)
+  end
+end
+ARGV.concat files
+
+# trace all methods
 class Module # :nodoc:
   include QuickTest::Tracer
 end
-#class Class;  include QuickTest::Tracer end
+
+# TODO: run pending tests at exit
+#at_exit do end

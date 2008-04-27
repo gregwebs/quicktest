@@ -90,6 +90,15 @@ module TestModule
       7.times {$r.shift}
     end
   end
+
+  define_method(:the_method) {}
+  def quicktest
+    msg = "should include the module into class Object"
+    it msg do
+      $r.shift.should =~ /^'#<Class:0x[^>]+> the_method #{msg}' FAILED$/
+      7.times {$r.shift}
+    end
+  end
 end
 
 class TestClass
