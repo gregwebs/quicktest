@@ -93,11 +93,16 @@ http://gregweber.info/projects/quicktest.html
 included with the gem
 
 == Important Notes
+- def quicktest will instantiate an object for the class you are testing, which gives a convenient referenct to self in the quicktest method.  However, it calls new() without any parameters.  If you need parameters for new(), you will have to use def self.quicktest and call new() yourself
+
+== Configuration
 - when testing module instance methods, the module is included into an anonymous class.  By default, that class inherits from Object.  To change this you must define an object that the module will be included into by defining the following in the module:
 
   def self.quicktest_include_into; String end
 
-- def quicktest will instantiate an object for the class you are testing, which gives a convenient referenct to self in the quicktest method.  However, it calls new() without any parameters.  If you need parameters for new(), you will have to use def self.quicktest and call new() yourself
+- you can change the testing method name from quicktest to something else using the command line option
+
+  --quicktest better_testing_name
 
 == TroubleShooting
 - quicktest methods not working properly? if the class (or one of its ancestors) is overriding method tracing then including QuickTest::Tracer will fix it, but you should also fix the class or its ancestor.

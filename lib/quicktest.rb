@@ -9,7 +9,7 @@ module QuickTest
   # create module variables
   class << self
     # then name of the testing method, default is :quicktest
-    attr_accessor :quicktest
+    attr_accessor :test_method
 
     # don't record the fact that we add Module.method_added
     attr_accessor :ignore_first_method_added
@@ -58,7 +58,7 @@ module QuickTest
     def initialize tested
       self.class.tested_self = tested
 
-      q = tested.method(QuickTest.quicktest)
+      q = tested.method(QuickTest.test_method)
       tested.extend(QuickTest.runner_module)
       QuickTest.runner_module::QuickTestIncludeModules.each do |mod|
         tested.extend mod
@@ -67,7 +67,7 @@ module QuickTest
       case q.arity
       when 0 then q.call
       when 1 then q.call tested.method(self.class.methods[-1])
-      else raise ArgumentError, "to many arguments for #{QuickTest.quicktest} method"
+      else raise ArgumentError, "to many arguments for #{QuickTest.test_method} method"
       end
 
       tested.send :__quicktest_run_tests__
@@ -75,7 +75,7 @@ module QuickTest
       # removing the quicktest method will prevent Ruby from warning about the method being redefined
       # I don't know how to remove a class method
       unless tested.kind_of?(Class) or tested.kind_of?(Module)
-        tested.class.class_eval { remove_method QuickTest.quicktest }
+        tested.class.class_eval { remove_method QuickTest.test_method }
       end
     end
   end
@@ -144,7 +144,7 @@ module QuickTest
             QuickTest.include_module_into = nil
           end
 
-          if traced == QuickTest.quicktest
+          if traced == QuickTest.test_method
             QuickTest.runner.new self
 
           elsif traced == :quicktest_include_into
@@ -164,7 +164,7 @@ module QuickTest
           # avoid infinite recursion if module is included into a class by a user
           return if traced == qt.runner.methods.last
 
-          if traced == QuickTest.quicktest
+          if traced == QuickTest.test_method
             qt.runner.new(
               if self.class != Module
                 self.new
@@ -189,8 +189,8 @@ module QuickTest
 end
 
 
-# command line configurable
-QuickTest.quicktest = :quicktest
+# configurable
+QuickTest.test_method = :quicktest
 QuickTest.runner = QuickTest::TestRunner
 QuickTest.runner_module = QuickTest::RSpecTestRunner
 
@@ -198,11 +198,13 @@ files = []
 while(arg = ARGV.shift)
   case arg
   when '--rspec'
-    QuickTest.runner_module = ARGV.shift || (fail "--rspec requires an argument")
+    QuickTest.runner_module = ARGV.shift ||
+      (puts "--rspec requires an argument";exit(1))
   when '--quicktest'
-    QuickTest.quicktest = ARGV.shift || (fail "--quicktest requires an argument")
+    QuickTest.test_method = ARGV.shift.to_sym ||
+      (puts "--quicktest requires an argument";exit(1))
   else
-    fail "unknown argument: #{arg}" unless File.exist? arg
+    (puts "unknown argument: #{arg}";exit(1)) unless File.exist? arg
     files.push(arg)
   end
 end

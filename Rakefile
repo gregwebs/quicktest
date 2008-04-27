@@ -13,6 +13,7 @@ desc "test"
 task :test do
   t = 'spec -r ../lib/quicktest test.rb'
   test_dir {(puts (run "#{t} >| test_result.txt || #{t}"))}
+  test_dir { puts `../bin/quickspec __test.rb --quicktest __test` }
 end
 
 namespace :test do
