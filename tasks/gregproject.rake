@@ -24,7 +24,7 @@ namespace :rcov do
   end
 end
 
-desc "release a new gem to rubyforge"
+desc "create a new gem release"
 task :release => [:test,:record,:rdoc,:website,:package] do
   Dir.chdir('pkg') do
     release = Dir['*.gem'].sort_by {|file| File.mtime(file)}.last
@@ -68,4 +68,3 @@ task :record do
     out 'git push origin master'
   end
 end
-
