@@ -60,7 +60,7 @@ Rake::RDocTask.new do |rd|
 
 desc 'git add and push'
 task :record do
-  unless `git diff`.chomp.empty?
+  unless `git status`.split($/).last =~ /nothing added/
     puts `git diff`
     ARGV.clear
     puts "enter commit message"
