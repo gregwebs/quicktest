@@ -44,18 +44,12 @@ end
 require 'rake/rdoctask'
 
 Rake::RDocTask.new do |rd|  
-   
-     rd.main = "README"  
-   
-     rd.rdoc_dir = "doc"
-   
-     rd.rdoc_files.include("README", "lib/**/*.rb")  
-   
-     rd.title = "#$project rdoc"  
-   
-     rd.options << '-S' # inline source  
-   
-     rd.template = `allison --path`.chomp + '.rb'  
+   rd.main = "README"  
+   rd.rdoc_dir = "doc"
+   rd.rdoc_files.include("README", "lib/**/*.rb")  
+   rd.title = "#$project rdoc"  
+   rd.options << '-S' # inline source  
+   rd.template = `allison --path`.chomp + '.rb'  
  end
 
 desc 'git add and push'
