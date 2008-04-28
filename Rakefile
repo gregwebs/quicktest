@@ -12,8 +12,11 @@ end
 desc "test"
 task :test do
   t = 'spec -r ../lib/quicktest test.rb'
-  test_dir {(puts (run "#{t} >| test_result.txt || #{t}"))}
-  test_dir { puts `../bin/quickspec __test.rb --quicktest __test` }
+  test_dir do
+    (puts (run "#{t} >| test_result.txt || #{t}"))
+    (puts (run '../bin/quickspec test.rb'))
+    (puts (run '../bin/quickspec __test.rb --quicktest __test'))
+  end
 end
 
 namespace :test do
@@ -89,7 +92,7 @@ require 'rake/gempackagetask'
 spec = Gem::Specification.new do |s|
   s.name = $project
   s.rubyforge_project = $project
-  s.version = "0.6.0"
+  s.version = "0.6.1"
   s.author = "Greg Weber"
   s.email = "greg@gregweber.info"
   s.homepage = "http://quicktest.rubyfore.org/"

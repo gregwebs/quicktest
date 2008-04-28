@@ -55,10 +55,10 @@ module QuickTest
       self.methods.push meth
     end
 
-    def initialize tested
+    def initialize tested, included_module=nil
       self.class.tested_self = tested
 
-      q = tested.method(QuickTest.test_method)
+      q = tested.method QuickTest.test_method
       tested.extend(QuickTest.runner_module)
       QuickTest.runner_module::QuickTestIncludeModules.each do |mod|
         tested.extend mod
@@ -73,10 +73,14 @@ module QuickTest
       tested.send :__quicktest_run_tests__
 
       # removing the quicktest method will prevent Ruby from warning about the method being redefined
-      # I don't know how to remove a class method
-      unless tested.kind_of?(Class) or tested.kind_of?(Module)
-        tested.class.class_eval { remove_method QuickTest.test_method }
-      end
+        if tested.kind_of?(Class) or tested.kind_of?(Module)
+          # TODO: errors for some cases here
+          #class << tested
+            #remove_method QuickTest.test_method
+          #end
+        else
+          tested.class.class_eval { remove_method QuickTest.test_method }
+        end
     end
   end
 
@@ -141,11 +145,11 @@ module QuickTest
 
           if QuickTest.last_self != self
             QuickTest.last_self = self
-            QuickTest.include_module_into = nil
+            QuickTest.include_module_into = Object
           end
 
           if traced == QuickTest.test_method
-              QuickTest.runner.new self
+            QuickTest.runner.new self
 
           elsif traced == :quicktest_include_into
             QuickTest.include_module_into = self.quicktest_include_into
@@ -166,11 +170,11 @@ module QuickTest
 
           if traced == QuickTest.test_method
             begin
-              qt.runner.new(
+              qt.runner.new( *
                 if self.class != Module
-                  self.new
+                  [self.new]
                 else
-                  Class.new(QuickTest.include_module_into || Object).extend(self)
+                  [Class.new(QuickTest.include_module_into).extend(self), self]
                 end
               )
             rescue ArgumentError
@@ -205,6 +209,7 @@ end
 QuickTest.test_method = :quicktest
 QuickTest.runner = QuickTest::TestRunner
 QuickTest.runner_module = QuickTest::RSpecTestRunner
+QuickTest.include_module_into = Object
 
 files = []
 while(arg = ARGV.shift)
