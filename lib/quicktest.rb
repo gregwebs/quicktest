@@ -145,7 +145,7 @@ module QuickTest
           end
 
           if traced == QuickTest.test_method
-            QuickTest.runner.new self
+              QuickTest.runner.new self
 
           elsif traced == :quicktest_include_into
             QuickTest.include_module_into = self.quicktest_include_into
@@ -165,13 +165,25 @@ module QuickTest
           return if traced == qt.runner.methods.last
 
           if traced == QuickTest.test_method
-            qt.runner.new(
-              if self.class != Module
-                self.new
-              else
-                Class.new(QuickTest.include_module_into || Object).extend(self)
-              end
-            )
+            begin
+              qt.runner.new(
+                if self.class != Module
+                  self.new
+                else
+                  Class.new(QuickTest.include_module_into || Object).extend(self)
+                end
+              )
+            rescue ArgumentError
+              puts <<-EOS
+method:
+  #{qt.runner.methods.last}
+object initialization requires arguments, use:
+  "def self.quicktest"
+instead of:
+  "def quicktest"
+EOS
+              exit(1)
+            end
 
           else
             unless qt.ignore_first_method_added or

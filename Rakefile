@@ -89,7 +89,7 @@ require 'rake/gempackagetask'
 spec = Gem::Specification.new do |s|
   s.name = $project
   s.rubyforge_project = $project
-  s.version = "0.5.7"
+  s.version = "0.6.0"
   s.author = "Greg Weber"
   s.email = "greg@gregweber.info"
   s.homepage = "http://quicktest.rubyfore.org/"
