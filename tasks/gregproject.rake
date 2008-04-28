@@ -61,6 +61,7 @@ Rake::RDocTask.new do |rd|
 desc 'git add and push'
 task :record do
   unless `git diff`.chomp.empty?
+    puts `git diff`
     ARGV.clear
     puts "enter commit message"
     out "git commit -a -m '#{Kernel.gets}'"
