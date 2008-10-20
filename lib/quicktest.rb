@@ -73,14 +73,16 @@ module QuickTest
       tested.send :__quicktest_run_tests__
 
       # removing the quicktest method will prevent Ruby from warning about the method being redefined
-        if tested.kind_of?(Class) or tested.kind_of?(Module)
-          # TODO: errors for some cases here
-          #class << tested
-            #remove_method QuickTest.test_method
-          #end
-        else
-          tested.class.class_eval { remove_method QuickTest.test_method }
+      if tested.kind_of?(Class) or tested.kind_of?(Module)
+        # TODO: errors for some cases here
+        unless included_module
+          class << tested
+            remove_method QuickTest.test_method
+          end
         end
+      else
+        tested.class.class_eval { remove_method QuickTest.test_method }
+      end
     end
   end
 
