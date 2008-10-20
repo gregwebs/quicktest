@@ -1,3 +1,5 @@
+$project = 'quicktest'
+require 'rake'
 Gem::Specification.new do |s|
   s.name = $project
   s.rubyforge_project = $project
