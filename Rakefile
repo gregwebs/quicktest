@@ -88,7 +88,15 @@ end
 
 require 'rubygems'
 require 'rake/gempackagetask'
+require 'quicktest.gemspec.rb'
 
-Rake::GemPackageTask.new(eval(File.read("#$project.gemspec"))) do |pkg|
+Rake::GemPackageTask.new($gem_specification) do |pkg|
   pkg.need_tar = false
+end
+
+desc "generate the gem specification"
+task :gem_specification do
+  File.open('quicktest.gemspec', 'w') do |fh|
+    fh.puts $gem_specification.to_ruby
+  end
 end
