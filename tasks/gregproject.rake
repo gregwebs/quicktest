@@ -17,7 +17,6 @@ namespace :rcov do
   end
 
   require 'spec/rake/verify_rcov'
-  # rcov is wrong- I am actually at 100%
   RCov::VerifyTask.new(:verify => :rcov) do |t|
     t.threshold = 100 # Make sure you have rcov 0.7 or higher!
     t.index_html = $rcov_index_html

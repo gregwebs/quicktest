@@ -1,5 +1,6 @@
 $project = 'quicktest'
 require 'tasks/helpers'
+$rcov_index_html = 'coverage/lib-quicktest_rb.html'
 
 def test_dir; Dir.chdir('spec') {|dir| yield dir } end
 
