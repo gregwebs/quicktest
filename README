@@ -70,7 +70,7 @@ Licensed under the MIT license
 
 == About
 
-The typical test driven development workflow requires constant switching between the file containg the source code and the the file containg the tests. When creating code, it is much faster to be able to place tests immediately after the code you are writing.  After the code has been written, it may be a good idea to move it to another file.
+The typical test driven development workflow requires constant switching between the file containing the source code and the the file containing the tests. When creating code, it is much faster to be able to place tests immediately after the code you are writing.  After the code has been written, it may be a good idea to move it to another file.
 
 Quicktest is designed to support quick tests in a framework agnostic way.  Currently, only an rspec testrunner is available, but it is trivial to write one for another testing framework.
 
@@ -93,7 +93,7 @@ http://gregweber.info/projects/quicktest.html
 included with the gem
 
 == Important Notes
-- def quicktest will instantiate an object for the class you are testing, which gives a convenient referenct to self in the quicktest method.  However, it calls new() without any parameters.  If you need parameters for new(), you will have to use def self.quicktest and call new() yourself
+- def quicktest will instantiate an object for the class you are testing, which gives a convenient reference to self in the quicktest method.  However, it calls new() without any parameters.  If you need parameters for new(), you will have to use def self.quicktest and call new() yourself
 
 == Configuration
 - when testing module instance methods, the module is included into an anonymous class.  By default, that class inherits from Object.  To change this you must define an object that the module will be included into by defining the following in the module:
